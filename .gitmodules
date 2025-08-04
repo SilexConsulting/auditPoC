@@ -1,0 +1,3 @@
+[submodule "openreplay"]
+	path = openreplay
+	url = https://github.com/openreplay/openreplay.git
