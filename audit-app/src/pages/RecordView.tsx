@@ -97,19 +97,19 @@ const RecordView = () => {
           </div>
           <div className="govuk-summary-list__row">
             <dt className="govuk-summary-list__key">Date of Birth</dt>
-            <dd className="govuk-summary-list__value">{record.dateOfBirth}</dd>
+            <dd className="govuk-summary-list__value" data-sensitive={true}>{record.dateOfBirth}</dd>
           </div>
           <div className="govuk-summary-list__row">
             <dt className="govuk-summary-list__key">Address</dt>
-            <dd className="govuk-summary-list__value">{record.address}</dd>
+            <dd className="govuk-summary-list__value" data-sensitive={true}>{record.address}</dd>
           </div>
           <div className="govuk-summary-list__row">
             <dt className="govuk-summary-list__key">Contact Number</dt>
-            <dd className="govuk-summary-list__value">{record.contactNumber}</dd>
+            <dd className="govuk-summary-list__value" data-sensitive={true}>{record.contactNumber}</dd>
           </div>
           <div className="govuk-summary-list__row">
             <dt className="govuk-summary-list__key">Last Updated</dt>
-            <dd className="govuk-summary-list__value">{record.lastUpdated}</dd>
+            <dd className="govuk-summary-list__value"data-sensitive={true}>{record.lastUpdated}</dd>
           </div>
         </div>
 

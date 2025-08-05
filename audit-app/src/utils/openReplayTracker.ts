@@ -1,6 +1,13 @@
 import Tracker from '@openreplay/tracker';
 import trackerAssist from '@openreplay/tracker-assist';
 
+/**
+ * OpenReplay tracker instance
+ * 
+ * Configuration includes privacy settings to ensure all field values
+ * are hidden from view in session recordings, as required for sensitive
+ * government applications handling personal data.
+ */
 let tracker: Tracker | null = null;
 
 export const initTracker = (userId: string) => {
@@ -14,6 +21,30 @@ export const initTracker = (userId: string) => {
   tracker = new Tracker({
     projectKey: import.meta.env.VITE_OPENREPLAY_PROJECT_KEY || 'YOUR_PROJECT_KEY',
     __DISABLE_SECURE_MODE: import.meta.env.DEV, // Enable secure mode in production
+    // Hide all field values from view
+    defaultInputMode: 2, // InputMode.Hidden - completely hide all input values
+    obscureInputNumbers: true,
+    obscureInputEmails: true,
+    obscureInputDates: true,
+    // Additional sanitization options
+    obscureTextEmails: true,
+    obscureTextNumbers: true,
+    // Custom DOM sanitizer to ensure all form fields and sensitive elements are hidden
+    domSanitizer: (node) => {
+      // Hide all input fields, textareas, and select elements
+      if (
+        node.tagName === 'INPUT' || 
+        node.tagName === 'TEXTAREA' || 
+        node.tagName === 'SELECT' ||
+        // Also hide elements with data-sensitive attribute
+        node.hasAttribute('data-sensitive')
+      ) {
+        return 2; // SanitizeLevel.Hidden
+      }
+
+      // Default to not sanitizing other elements
+      return 0; // SanitizeLevel.Plain
+    },
   });
 
   // Add Assist plugin
