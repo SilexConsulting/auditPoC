@@ -1,11 +1,13 @@
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
-import { useEffect } from 'react';
-import Login from './pages/Login';
-import Search from './pages/Search';
-import RecordView from './pages/RecordView';
+import { useEffect, lazy, Suspense } from 'react';
 import { AuditProvider } from './context/AuditContext';
 import { initTracker } from './utils/openReplayTracker';
 import './App.css';
+
+// Lazy load page components
+const Login = lazy(() => import('./pages/Login'));
+const Search = lazy(() => import('./pages/Search'));
+const RecordView = lazy(() => import('./pages/RecordView'));
 
 // Auth guard component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -18,6 +20,15 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// Loading component for Suspense fallback
+const Loading = () => (
+  <div className="govuk-width-container">
+    <main className="govuk-main-wrapper">
+      <h1 className="govuk-heading-xl">Loading...</h1>
+    </main>
+  </div>
+);
+
 const router = createBrowserRouter([
   {
     path: '/',
@@ -25,22 +36,30 @@ const router = createBrowserRouter([
   },
   {
     path: '/login',
-    element: <Login />,
+    element: (
+      <Suspense fallback={<Loading />}>
+        <Login />
+      </Suspense>
+    ),
   },
   {
     path: '/search',
     element: (
-      <ProtectedRoute>
-        <Search />
-      </ProtectedRoute>
+      <Suspense fallback={<Loading />}>
+        <ProtectedRoute>
+          <Search />
+        </ProtectedRoute>
+      </Suspense>
     ),
   },
   {
     path: '/record/:id',
     element: (
-      <ProtectedRoute>
-        <RecordView />
-      </ProtectedRoute>
+      <Suspense fallback={<Loading />}>
+        <ProtectedRoute>
+          <RecordView />
+        </ProtectedRoute>
+      </Suspense>
     ),
   },
 ]);
