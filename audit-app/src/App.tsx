@@ -69,6 +69,7 @@ function App() {
     // Initialize tracker when user logs in
     const user = JSON.parse(sessionStorage.getItem('user') || '{}');
     if (user.username) {
+      // Initialize tracker - it will automatically wait for styles to be loaded
       initTracker(user.username);
     }
   }, []);

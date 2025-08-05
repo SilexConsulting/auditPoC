@@ -35,10 +35,28 @@ export const initTracker = (userId: string) => {
     }
   }));
 
-  // Start the tracker with user identification
-  tracker.start();
-  tracker.setUserID(userId);
+  // Ensure styles are loaded before starting the tracker
+  const startTrackerWhenReady = () => {
+    // If document is already complete, start tracker immediately
+    if (document.readyState === 'complete') {
+      console.log("OpenReplay: Starting tracker (document already complete)");
+      tracker?.start();
+      tracker?.setUserID(userId);
+    } else {
+      // Otherwise, wait for window.load event
+      console.log("OpenReplay: Waiting for window.load event before starting tracker");
+      window.addEventListener('load', () => {
+        // Add a small delay to ensure all styles are applied
+        setTimeout(() => {
+          console.log("OpenReplay: Starting tracker after window.load");
+          tracker?.start();
+          tracker?.setUserID(userId);
+        }, 500);
+      }, { once: true });
+    }
+  };
 
+  startTrackerWhenReady();
   return tracker;
 };
 
