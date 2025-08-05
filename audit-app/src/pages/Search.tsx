@@ -1,52 +1,66 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { recordCorrelationId } from '../utils/openReplayTracker';
+import { useAudit } from '../context/AuditContext';
+import api from '../services/api';
+
+// Define interface for search result item
+interface SearchResultItem {
+  id: string | number;
+  name: string;
+  recordType: string;
+}
+
+// Define interface for search response data
+interface SearchResponseData {
+  results: SearchResultItem[];
+  correlation_id: string;
+}
 
 const Search = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchReason, setSearchReason] = useState('');
   const [searchingFor, setSearchingFor] = useState('other');
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<SearchResultItem[]>([]);
   const navigate = useNavigate();
+  const { setAuditReason, captureAuditEvent, getAuditContext } = useAudit();
+
+  // Update audit reason when searchReason changes
+  useEffect(() => {
+    setAuditReason(searchReason);
+  }, [searchReason, setAuditReason]);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Mock API call with correlation ID
+
+    // Create audit context for this search
+    const auditContext = {
+      ...getAuditContext(),
+      searchingForSelf: searchingFor === 'self',
+    };
+
     try {
-      const response = await fetch('https://mock-api.example/search', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          term: searchTerm,
-          reason: searchReason,
-          searchingForSelf: searchingFor === 'self',
-        }),
+      // Use API service with audit context
+      const data = await api.post<SearchResponseData>('/search', { term: searchTerm }, auditContext);
+
+      // Capture search event
+      captureAuditEvent('search', {
+        term: searchTerm,
+        searchingForSelf: searchingFor === 'self',
+        resultsCount: data.results?.length || 0
       });
-      
-      const data = await response.json();
-      
-      // Record the correlation ID from the API response
-      if (data.correlation_id) {
-        recordCorrelationId(data.correlation_id);
-      }
-      
-      // Set mock results
-      setResults([
-        { id: 1, name: 'John Smith', recordType: 'Personal' },
-        { id: 2, name: 'Jane Doe', recordType: 'Medical' },
-        { id: 3, name: 'Robert Johnson', recordType: 'Financial' },
-      ]);
+
+      // Set results
+      setResults(data.results || []);
     } catch (error) {
       console.error('Search failed:', error);
+      captureAuditEvent('search_error', { term: searchTerm, error: String(error) });
+
       // For demo purposes, still show results even if the API call fails
       setResults([
         { id: 1, name: 'John Smith', recordType: 'Personal' },
         { id: 2, name: 'Jane Doe', recordType: 'Medical' },
         { id: 3, name: 'Robert Johnson', recordType: 'Financial' },
-      ]);
+      ] as SearchResultItem[]);
     }
   };
 
@@ -54,7 +68,7 @@ const Search = () => {
     <div className="govuk-width-container">
       <main className="govuk-main-wrapper">
         <h1 className="govuk-heading-xl">Records Search</h1>
-        
+
         <div className="govuk-warning-text">
           <span className="govuk-warning-text__icon" aria-hidden="true">!</span>
           <strong className="govuk-warning-text__text">
@@ -62,7 +76,7 @@ const Search = () => {
             All searches are logged and audited. You must provide a valid reason for your search.
           </strong>
         </div>
-        
+
         <form onSubmit={handleSearch} className="govuk-form-group">
           <div className="govuk-form-group">
             <label className="govuk-label" htmlFor="search">Search term</label>
@@ -75,7 +89,7 @@ const Search = () => {
               required
             />
           </div>
-          
+
           <div className="govuk-form-group">
             <fieldset className="govuk-fieldset">
               <legend className="govuk-fieldset__legend govuk-fieldset__legend--m">
@@ -113,7 +127,7 @@ const Search = () => {
               </div>
             </fieldset>
           </div>
-          
+
           <div className="govuk-form-group">
             <label className="govuk-label" htmlFor="reason">Reason for search</label>
             <textarea
@@ -125,10 +139,10 @@ const Search = () => {
               required
             ></textarea>
           </div>
-          
+
           <button type="submit" className="govuk-button">Search Records</button>
         </form>
-        
+
         {results.length > 0 && (
           <div className="govuk-!-margin-top-6">
             <h2 className="govuk-heading-m">Search Results</h2>

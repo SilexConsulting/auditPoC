@@ -1,69 +1,119 @@
-# React + TypeScript + Vite
+# Audit Proof of Concept
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a React application that demonstrates OpenReplay functionality for a government records management system. The application includes audit logging capabilities with correlation ID tracking between frontend and backend systems.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- User authentication with session tracking
+- Audit trail for searches with reason documentation
+- Correlation ID tracking with OpenReplay
+- GDS Design System for government application standards
+- Protected routes with React Router 7
 
-## Expanding the ESLint configuration
+## Prerequisites
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Node.js (v16 or later)
+- npm or yarn
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Installation
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+1. Clone the repository:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+git clone <repository-url>
+cd audit-app
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2. Install dependencies:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
+
+3. Create a `.env.local` file based on `.env.example`:
+
+```bash
+cp .env.example .env.local
+```
+
+4. Update the `.env.local` file with your OpenReplay project key:
+
+```
+VITE_OPENREPLAY_PROJECT_KEY=your_actual_project_key
+```
+
+## Development
+
+To start the development server:
+
+```bash
+npm run dev
+```
+
+This will start the application at http://localhost:5173.
+
+## Building for Production
+
+To build the application for production:
+
+```bash
+npm run build
+```
+
+The built files will be in the `dist` directory.
+
+## Deployment
+
+### Deploying to Vercel
+
+1. Install the Vercel CLI:
+
+```bash
+npm install -g vercel
+```
+
+2. Deploy to Vercel:
+
+```bash
+vercel
+```
+
+3. When prompted, set up your environment variables:
+   - Name: `VITE_OPENREPLAY_PROJECT_KEY`
+   - Value: Your actual OpenReplay project key
+
+Alternatively, you can deploy through the Vercel dashboard by connecting your Git repository.
+
+## Project Structure
+
+- `src/assets/`: Static assets and documentation
+- `src/components/`: Reusable UI components
+- `src/context/`: React context providers
+- `src/hooks/`: Custom React hooks
+- `src/pages/`: Application pages
+- `src/services/`: API services
+- `src/utils/`: Utility functions
+
+## Key Components
+
+### OpenReplay Integration
+
+The application uses OpenReplay for session recording and audit logging. The integration is set up in `src/utils/openReplayTracker.ts`.
+
+### Audit Context
+
+The audit context provider in `src/context/AuditContext.tsx` provides functionality for capturing audit events and managing audit context.
+
+### API Service
+
+The API service in `src/services/api.ts` provides a centralized way to make API calls with correlation ID tracking.
+
+## Security Considerations
+
+- The application uses environment variables to store sensitive information like the OpenReplay project key
+- Secure mode is enabled in production to ensure secure communication with the OpenReplay server
+- The application includes functionality for sanitizing sensitive data in session recordings
+
+## License
+
+[MIT](LICENSE)

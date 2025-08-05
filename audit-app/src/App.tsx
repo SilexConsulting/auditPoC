@@ -1,7 +1,10 @@
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import Login from './pages/Login';
 import Search from './pages/Search';
 import RecordView from './pages/RecordView';
+import { AuditProvider } from './context/AuditContext';
+import { initTracker } from './utils/openReplayTracker';
 import './App.css';
 
 // Auth guard component
@@ -43,7 +46,19 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  return <RouterProvider router={router} />;
+  useEffect(() => {
+    // Initialize tracker when user logs in
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+    if (user.username) {
+      initTracker(user.username);
+    }
+  }, []);
+
+  return (
+    <AuditProvider>
+      <RouterProvider router={router} />
+    </AuditProvider>
+  );
 }
 
 export default App;
