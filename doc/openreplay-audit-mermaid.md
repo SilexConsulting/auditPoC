@@ -2,7 +2,8 @@
 
 ## Overview
 
-This document provides a Mermaid-based architecture diagram for implementing audit logging with OpenReplay in a government records management system.
+This document provides a Mermaid-based architecture diagram for implementing audit logging 
+with OpenReplay in a records management system.
 
 ## Architecture Diagram
 

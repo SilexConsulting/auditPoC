@@ -1,37 +1,61 @@
 import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { useAudit } from '../context/AuditContext';
+import api from '../services/api';
+
+// Define interface for record data
+interface RecordData {
+  id: string | number;
+  name: string;
+  recordType: string;
+  dateOfBirth: string;
+  address: string;
+  contactNumber: string;
+  lastUpdated: string;
+  correlation_id: string;
+}
 
 const RecordView = () => {
   const { id } = useParams<{ id: string }>();
-  const [record, setRecord] = useState<any>(null);
+  const [record, setRecord] = useState<RecordData | null>(null);
   const [loading, setLoading] = useState(true);
+  const { captureAuditEvent, getAuditContext } = useAudit();
 
   useEffect(() => {
-    // Mock API call to fetch record details
+    // Fetch record details using API service
     const fetchRecord = async () => {
       try {
-        // In a real application, this would be an actual API call
-        // For demo purposes, we'll just simulate a delay and return mock data
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        setRecord({
-          id,
-          name: id === '1' ? 'John Smith' : id === '2' ? 'Jane Doe' : 'Robert Johnson',
-          recordType: id === '1' ? 'Personal' : id === '2' ? 'Medical' : 'Financial',
-          dateOfBirth: '1980-01-01',
-          address: '123 Government Street, London',
-          contactNumber: '020 1234 5678',
-          lastUpdated: '2023-05-15',
+        // Create audit context for this record view
+        const auditContext = {
+          ...getAuditContext(),
+          action: 'view_record',
+          recordId: id
+        };
+
+        // Use API service with audit context
+        const data = await api.get<RecordData>(`/records/${id}`, auditContext);
+
+        // Capture record view event
+        captureAuditEvent('record_view', {
+          recordId: id,
+          recordType: data.recordType,
+          timestamp: new Date().toISOString()
         });
+
+        setRecord(data);
       } catch (error) {
         console.error('Failed to fetch record:', error);
+        captureAuditEvent('record_view_error', { 
+          recordId: id, 
+          error: String(error) 
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchRecord();
-  }, [id]);
+  }, [id, captureAuditEvent, getAuditContext]);
 
   if (loading) {
     return (
@@ -58,14 +82,14 @@ const RecordView = () => {
     <div className="govuk-width-container">
       <main className="govuk-main-wrapper">
         <h1 className="govuk-heading-xl">Record Details</h1>
-        
+
         <div className="govuk-panel govuk-panel--confirmation">
           <h2 className="govuk-panel__title">{record.name}</h2>
           <div className="govuk-panel__body">
             Record ID: {record.id}
           </div>
         </div>
-        
+
         <div className="govuk-summary-list">
           <div className="govuk-summary-list__row">
             <dt className="govuk-summary-list__key">Record Type</dt>
@@ -88,7 +112,7 @@ const RecordView = () => {
             <dd className="govuk-summary-list__value">{record.lastUpdated}</dd>
           </div>
         </div>
-        
+
         <button 
           className="govuk-button govuk-button--secondary" 
           onClick={() => window.history.back()}
